@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Tesla License Plate Scanner is a local-first TeslaCam analysis dashboard for Dashcam, Sentry, Saved Clip, and TeslaUSB footage." />
+  <title>Tesla License Plate Scanner</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #0d1423;
+      --panel-2: #111b2e;
+      --text: #eef4ff;
+      --muted: #a8b5cc;
+      --line: rgba(174, 197, 232, .15);
+      --blue: #4f8cff;
+      --violet: #8b5cf6;
+      --green: #3ed598;
+      --amber: #ffbf5f;
+      --max: 1160px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(79, 140, 255, .20), transparent 30rem),
+        radial-gradient(circle at 84% 18%, rgba(139, 92, 246, .18), transparent 27rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(calc(100% - 36px), var(--max)); margin: 0 auto; }
+    nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 39px; height: 39px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      box-shadow: 0 12px 30px rgba(79, 140, 255, .25);
+      font-weight: 900;
+    }
+    .nav-links { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: .94rem; }
+    .nav-links a:hover { color: var(--text); }
+    .mini-button, .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      font-weight: 750; border-radius: 12px; transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+    .mini-button { border: 1px solid rgba(136, 171, 238, .35); padding: 9px 13px; color: var(--text); }
+    .button { padding: 13px 18px; border: 1px solid transparent; }
+    .button:hover, .mini-button:hover { transform: translateY(-2px); }
+    .button-primary { background: linear-gradient(135deg, var(--blue), var(--violet)); box-shadow: 0 16px 34px rgba(72, 105, 255, .23); }
+    .button-secondary { border-color: rgba(136, 171, 238, .33); background: rgba(18, 29, 50, .7); }
+    .hero { padding: 92px 0 58px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 46px; align-items: center; }
+    .eyebrow { color: #bcd4ff; font-size: .79rem; letter-spacing: .14em; font-weight: 800; text-transform: uppercase; }
+    h1 { font-size: clamp(2.7rem, 6vw, 5.3rem); line-height: .98; letter-spacing: -.065em; margin: 15px 0 23px; max-width: 780px; }
+    h1 span { color: #a9c7ff; }
+    .lead { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.22rem); max-width: 670px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 29px; }
+    .trust { display: flex; flex-wrap: wrap; gap: 10px; padding: 26px 0 0; }
+    .pill { border: 1px solid var(--line); background: rgba(11, 20, 36, .68); color: #c9d8f2; padding: 8px 11px; border-radius: 999px; font-size: .86rem; }
+    .hero-shot { position: relative; }
+    .hero-shot::before { content: ""; position: absolute; inset: 7% -6% -4% 10%; background: linear-gradient(135deg, rgba(79,140,255,.38), rgba(139,92,246,.28)); filter: blur(62px); z-index: -1; }
+    .dashboard {
+      display: block; width: 100%; border-radius: 20px; border: 1px solid rgba(161, 190, 242, .24);
+      box-shadow: 0 34px 76px rgba(0,0,0,.42); background: #f5f7fc;
+    }
+    section { padding: 54px 0; }
+    .section-title { max-width: 720px; }
+    h2 { margin: 0; font-size: clamp(1.9rem, 3vw, 3rem); line-height: 1.08; letter-spacing: -.045em; }
+    .section-copy { color: var(--muted); font-size: 1.05rem; margin-top: 14px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 32px 0 8px; }
+    .stat, .card, .step { background: linear-gradient(160deg, rgba(18, 31, 53, .92), rgba(10, 18, 32, .78)); border: 1px solid var(--line); border-radius: 18px; }
+    .stat { padding: 23px; }
+    .stat strong { display:block; font-size: 1.4rem; letter-spacing: -.03em; }
+    .stat span { color: var(--muted); font-size: .92rem; }
+    .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 27px; }
+    .card { padding: 23px; min-height: 194px; }
+    .icon { width: 42px; height:42px; display:grid; place-items:center; border-radius: 12px; background: rgba(102, 137, 255, .15); color: #c8d8ff; font-size: 1.2rem; }
+    h3 { margin: 16px 0 8px; font-size: 1.07rem; letter-spacing: -.02em; }
+    .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+    .workflow { display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+    .step { padding: 22px; position:relative; }
+    .step:not(:last-child)::after { content: "→"; position:absolute; right:-17px; top: 50%; transform:translateY(-50%); color:#9bbcff; font-size: 1.35rem; z-index:2; }
+    .step-no { color:#9bbcff; font-size:.8rem; font-weight:800; letter-spacing:.1em; }
+    .step strong { display:block; margin-top:8px; font-size:1.08rem; }
+    .step span { display:block; margin-top:7px; color:var(--muted); font-size:.9rem; }
+    .split { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items:center; }
+    .pipeline { display:block; width:100%; border:1px solid var(--line); border-radius:18px; background:#f3f5fb; }
+    .checklist { padding: 0; margin: 0; list-style: none; }
+    .checklist li { position:relative; padding:12px 0 12px 29px; color:var(--muted); border-bottom: 1px solid var(--line); }
+    .checklist li:last-child { border-bottom: 0; }
+    .checklist li::before { content: "✓"; position:absolute; left:0; color:var(--green); font-weight:900; }
+    .notice { margin-top: 25px; padding: 19px 20px; border-left: 3px solid var(--amber); background: rgba(255, 191, 95, .08); border-radius: 0 14px 14px 0; color: #ffe1aa; }
+    .cta { margin-top: 30px; padding: clamp(27px, 5vw, 54px); border-radius: 22px; border: 1px solid rgba(140, 170, 255, .28); background: linear-gradient(135deg, rgba(54, 92, 174, .35), rgba(91, 53, 172, .27)); text-align:center; }
+    .cta h2 { max-width: 680px; margin: 0 auto; }
+    .cta p { color: #d2ddf2; max-width: 650px; margin: 14px auto 24px; }
+    footer { margin-top: 52px; border-top: 1px solid var(--line); padding: 28px 0 42px; color: #8393ad; font-size: .88rem; }
+    footer .foot { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    @media (max-width: 900px) {
+      .hero, .split { grid-template-columns: 1fr; }
+      .hero { padding-top: 62px; }
+      .workflow { grid-template-columns: repeat(2, 1fr); }
+      .step:nth-child(2)::after { display:none; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 620px) {
+      .nav-links a { display:none; }
+      .stats, .grid-3, .workflow { grid-template-columns: 1fr; }
+      .step::after { display:none; }
+      nav { height:66px; }
+      .hero { gap: 31px; }
+      .section-copy { font-size: 1rem; }
+      .button { width:100%; }
+      .actions { display:block; }
+      .actions .button { margin-bottom:10px; }
+      footer .foot { align-items:flex-start; flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#top" aria-label="Tesla License Plate Scanner home">
+        <span class="brand-mark">T</span><span>Tesla License Plate Scanner</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#install">Install</a>
+        <a class="mini-button" href="https://github.com/prokyle123/tesla-license-plate-scanner">View on GitHub ↗</a>
+      </div>
+    </nav>
+
+    <main id="top">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">TeslaCam analysis, kept local</div>
+          <h1>Turn <span>Tesla camera footage</span> into a searchable review system.</h1>
+          <p class="lead">A local-first dashboard for reviewing Dashcam, Sentry Mode, Saved Clip, and TeslaUSB footage with AI plate detection, optional OCR, duplicate reduction, and clip-aware results.</p>
+          <div class="actions">
+            <a class="button button-primary" href="https://github.com/prokyle123/tesla-license-plate-scanner">Open the repository ↗</a>
+            <a class="button button-secondary" href="https://github.com/prokyle123/tesla-license-plate-scanner#install-tesla-license-plate-scanner">Read the install guide</a>
+          </div>
+          <div class="trust">
+            <span class="pill">Python + Flask</span>
+            <span class="pill">CodeProject.AI</span>
+            <span class="pill">Optional Tesseract OCR</span>
+            <span class="pill">TeslaUSB compatible</span>
+            <span class="pill">Local-first workflow</span>
+          </div>
+        </div>
+        <div class="hero-shot">
+          <img class="dashboard" src="images/dashboard-preview.svg" alt="Synthetic Tesla License Plate Scanner dashboard preview" />
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <div class="eyebrow">Why it exists</div>
+          <h2>Tesla records the moment. This helps find it again.</h2>
+          <p class="section-copy">TeslaCam archives can become a pile of video segments. The scanner samples the footage, preserves the source context, and makes detections easier to review in one place.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><strong>Dashcam + Sentry</strong><span>Scans the familiar TeslaCam folder structure.</span></div>
+          <div class="stat"><strong>AI + OCR</strong><span>Detection first, optional text extraction second.</span></div>
+          <div class="stat"><strong>Private by design</strong><span>Runs on your hardware without uploading footage.</span></div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="section-title">
+          <div class="eyebrow">Built for review, not hype</div>
+          <h2>Everything needed to turn clips into useful local evidence.</h2>
+        </div>
+        <div class="grid-3">
+          <article class="card"><div class="icon">◫</div><h3>TeslaCam indexing</h3><p>Indexes RecentClips, SentryClips, and SavedClips from a USB drive, external SSD, NAS, TeslaUSB backup, or copied archive.</p></article>
+          <article class="card"><div class="icon">◎</div><h3>Local AI detection</h3><p>Sends sampled frames to a compatible local CodeProject.AI custom license-plate endpoint and records confidence with source context.</p></article>
+          <article class="card"><div class="icon">Aa</div><h3>Optional OCR</h3><p>Can use Tesseract OCR and/or a compatible local AI OCR endpoint as a review aid for detected plate regions.</p></article>
+          <article class="card"><div class="icon">⇄</div><h3>Duplicate reduction</h3><p>Uses nearby timing, source clips, camera views, position, confidence, and OCR details so repeated frames do not overwhelm the results.</p></article>
+          <article class="card"><div class="icon">⌕</div><h3>Searchable dashboard</h3><p>Review detections by time, camera, clip, confidence, OCR text, event, and locally generated visual previews.</p></article>
+          <article class="card"><div class="icon">◉</div><h3>Scanner health</h3><p>Tracks queued work, scanner status, live logs, local settings, and CodeProject.AI availability from a responsive Flask interface.</p></article>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-title">
+          <div class="eyebrow">Workflow</div>
+          <h2>From built-in cameras to a searchable dashboard.</h2>
+        </div>
+        <div class="workflow">
+          <div class="step"><span class="step-no">01</span><strong>Tesla records</strong><span>Dashcam, Sentry, or Saved Clip footage is stored in TeslaCam folders.</span></div>
+          <div class="step"><span class="step-no">02</span><strong>Footage is preserved</strong><span>TeslaUSB is optional; use a USB drive, mounted backup, NAS share, or copied archive.</span></div>
+          <div class="step"><span class="step-no">03</span><strong>Frames are sampled</strong><span>The scanner finds compatible clips and processes frames at a configurable interval.</span></div>
+          <div class="step"><span class="step-no">04</span><strong>Review locally</strong><span>AI detection and optional OCR become searchable, clip-linked dashboard records.</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="split">
+          <div>
+            <div class="eyebrow">Architecture</div>
+            <h2>Works beside TeslaUSB, but does not require it.</h2>
+            <p class="section-copy">TeslaUSB can provide the in-car capture and backup layer on a Raspberry Pi. This project can then scan its saved TeslaCam folders, or any compatible footage folder available to your Linux host.</p>
+            <div class="actions"><a class="button button-secondary" href="https://github.com/prokyle123/tesla-license-plate-scanner#teslausb--teslacam-workflow">Read the TeslaUSB workflow</a></div>
+          </div>
+          <img class="pipeline" src="images/pipeline.svg" alt="Tesla License Plate Scanner processing pipeline" />
+        </div>
+      </section>
+
+      <section id="install">
+        <div class="split">
+          <div>
+            <div class="eyebrow">Installation</div>
+            <h2>Deploy it on a Raspberry Pi, mini PC, Linux box, or home server.</h2>
+            <p class="section-copy">The installer sets up the local app and systemd services. Configure the TeslaCam folder path and your local CodeProject.AI endpoint, then open the dashboard from a trusted device on your network.</p>
+            <div class="actions"><a class="button button-primary" href="https://github.com/prokyle123/tesla-license-plate-scanner#install-tesla-license-plate-scanner">Open full installation steps</a></div>
+          </div>
+          <div class="card">
+            <h3>What you need</h3>
+            <ul class="checklist">
+              <li>Linux host with Python 3 and sufficient local storage.</li>
+              <li>TeslaCam footage on local or mounted storage.</li>
+              <li>CodeProject.AI Server with a compatible custom plate-detection endpoint.</li>
+              <li>Optional Tesseract OCR for local text extraction.</li>
+              <li>A trusted private-network device to access the dashboard.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notice"><strong>Privacy and accuracy:</strong> This project is meant for reviewing footage you are entitled to access. OCR and AI output can be wrong, especially with motion blur, rain, glare, darkness, distance, or compression. It does not perform vehicle-owner lookup, and it should not be used as a substitute for human review.</div>
+      </section>
+
+      <section>
+        <div class="cta">
+          <div class="eyebrow">Open source project</div>
+          <h2>Build a better way to review your own TeslaCam footage.</h2>
+          <p>See the source, installation instructions, architecture notes, CodeProject.AI setup, and full dashboard feature set on GitHub.</p>
+          <div class="actions" style="justify-content:center"><a class="button button-primary" href="https://github.com/prokyle123/tesla-license-plate-scanner">View Tesla License Plate Scanner ↗</a></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="foot">
+        <span>Tesla License Plate Scanner · local-first TeslaCam analysis</span>
+        <span><a href="https://github.com/prokyle123/tesla-license-plate-scanner">GitHub</a> · <a href="https://github.com/prokyle123/tesla-license-plate-scanner/blob/main/LICENSE">MIT License</a></span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
