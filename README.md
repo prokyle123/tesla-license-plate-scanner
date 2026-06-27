@@ -1,4 +1,4 @@
-# Tesla License Plate Scanner
+﻿# Tesla License Plate Scanner | AI Dashboard for TeslaUSB & TeslaCam Footage
 ### Review Tesla Dashcam, Sentry Mode, and Saved Clip footage using the car's built-in cameras
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
@@ -35,8 +35,42 @@ A self-hosted, privacy-first dashboard for reviewing **TeslaCam footage already 
 
 ---
 
-## What It Does
 
+## TeslaUSB + TeslaCam Workflow
+
+> **Turn Tesla’s built-in cameras into a searchable AI footage system.**
+
+TeslaUSB runs on a Raspberry Pi and can act as the TeslaCam USB drive while automatically preserving and backing up Dashcam, Sentry Mode, and Saved Clip footage to attached storage.
+
+This project is the **AI analysis layer**. It scans those saved TeslaCam-compatible folders, detects visible license plates, attempts OCR text extraction, reduces duplicate sightings, and turns raw camera footage into a searchable local dashboard.
+
+```text
+Tesla Built-In Cameras
+        ↓
+Tesla Dashcam / Sentry / Saved Clips
+        ↓
+TeslaUSB running on a Raspberry Pi
+        ↓
+TeslaCam folders saved to Pi storage, SSD, NAS, or backup drive
+        ↓
+Tesla License Plate Scanner
+        ↓
+AI Detection + OCR + Searchable Local Dashboard
+```
+
+### Built to work with TeslaUSB
+
+TeslaUSB handles the always-on camera-storage and backup side of the setup. This project handles the intelligence side: reviewing footage, finding plate detections, reading likely text, grouping repeated sightings, and making everything searchable.
+
+TeslaUSB is optional. The scanner can analyze any compatible TeslaCam folder, including:
+
+- TeslaUSB backups from a Raspberry Pi
+- A copied Tesla USB drive
+- TeslaCam folders on an external SSD
+- TeslaCam archives stored on a NAS
+- Dashcam, Sentry Mode, or Saved Clip folders copied to a home server
+
+## What It Does
 Tesla vehicles can record surround-view video through Dashcam, Sentry Mode, and Saved Clips. Those recordings are useful after a parking-lot incident, a drive, a Sentry event, or simply when you need to review what happened around the vehicle. The downside is that one event can contain several video streams and hundreds of frames.
 
 Tesla License Plate Scanner turns a local TeslaCam archive into a searchable review workspace. It is designed to help you work through already-recorded footage faster while keeping the data under your control.
@@ -64,9 +98,9 @@ Tesla Dashcam, Sentry Mode, and Saved Clips save video to USB or a TeslaUSB-styl
 
 ```text
 TeslaCam/
-├── RecentClips/
-├── SentryClips/
-└── SavedClips/
+â”œâ”€â”€ RecentClips/
+â”œâ”€â”€ SentryClips/
+â””â”€â”€ SavedClips/
 ```
 
 The exact video files and camera availability vary by vehicle model, software version, recording mode, and event type.
@@ -135,23 +169,23 @@ The project is split into two local services that share a SQLite database:
 
 ```text
 TeslaCam video archive
-        │
-        ▼
+        â”‚
+        â–¼
 Background scanner
   - indexes clips
   - samples frames
   - sends frames to AI
   - optional OCR
   - saves local metadata/crops
-        │
-        ├──────────────► Local CodeProject.AI
-        │                 - custom plate detector
-        │                 - optional object detector
-        │                 - optional OCR endpoint
-        ▼
+        â”‚
+        â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º Local CodeProject.AI
+        â”‚                 - custom plate detector
+        â”‚                 - optional object detector
+        â”‚                 - optional OCR endpoint
+        â–¼
 SQLite database + generated image previews
-        │
-        ▼
+        â”‚
+        â–¼
 Flask / Waitress dashboard on port 5057
 ```
 
@@ -405,16 +439,16 @@ http://127.0.0.1:5057
 
 ```text
 tesla-license-plate-scanner/
-├── app/                    # Flask app, database, local storage, video helpers, web routes
-├── scanner/                # Frame sampling, CodeProject.AI client, OCR, deduplication, scan loop
-├── templates/              # Dashboard HTML templates
-├── static/                 # CSS, JavaScript, and local generated detection media
-├── systemd/                # Web service, scanner service, paired target
-├── tools/                  # Maintenance utilities, including OCR backfill
-├── docs/                   # Architecture, deployment, and privacy notes
-├── config.example.json     # Safe example configuration
-├── install.sh              # Linux installation helper
-└── requirements.txt        # Python dependencies
+â”œâ”€â”€ app/                    # Flask app, database, local storage, video helpers, web routes
+â”œâ”€â”€ scanner/                # Frame sampling, CodeProject.AI client, OCR, deduplication, scan loop
+â”œâ”€â”€ templates/              # Dashboard HTML templates
+â”œâ”€â”€ static/                 # CSS, JavaScript, and local generated detection media
+â”œâ”€â”€ systemd/                # Web service, scanner service, paired target
+â”œâ”€â”€ tools/                  # Maintenance utilities, including OCR backfill
+â”œâ”€â”€ docs/                   # Architecture, deployment, and privacy notes
+â”œâ”€â”€ config.example.json     # Safe example configuration
+â”œâ”€â”€ install.sh              # Linux installation helper
+â””â”€â”€ requirements.txt        # Python dependencies
 ```
 
 ---
@@ -466,3 +500,4 @@ Tesla, Dashcam, and Sentry Mode are names associated with Tesla, Inc. This is an
 ## License
 
 Released under the [MIT License](LICENSE).
+
