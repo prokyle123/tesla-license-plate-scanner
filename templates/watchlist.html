@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-head">
+    <div class="hgroup">
+      <h1>Watchlist</h1>
+      <div class="sub">Plates of interest (high-signal alerts)</div>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="filters">
+      <form method="post" action="{{ url_for('watchlist_save') }}" style="display:flex; flex-wrap:wrap; gap:10px; width:100%;">
+        <input name="new_plate" placeholder="Add plate (e.g. ABC1234)" style="min-width:240px;" />
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+    </div>
+
+    {% if entries and entries|length %}
+      <table class="table">
+        <thead><tr><th>Plate</th><th>Last seen</th><th>Count</th><th></th></tr></thead>
+        <tbody>
+          {% for e in entries %}
+            <tr>
+              <td><a class="plate" href="{{ url_for('plate_detail', plate=e.plate) }}">{{ e.plate }}</a></td>
+              <td><div class="meta">{{ e.last_seen or '—' }}</div></td>
+              <td>{{ e.count or 0 }}</td>
+              <td style="text-align:right;">
+                <form method="post" action="{{ url_for('watchlist_save') }}" style="display:inline;">
+                  <input type="hidden" name="remove_plate" value="{{ e.plate }}" />
+                  <button class="btn" type="submit">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="card-body"><div class="tiny">Your watchlist is empty.</div></div>
+    {% endif %}
+  </section>
+{% endblock %}

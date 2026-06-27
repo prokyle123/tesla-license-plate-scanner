@@ -1,0 +1,137 @@
+
+<style id="live-log-wrap-fix">
+#liveLog {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+}
+</style>
+
+{% extends "base.html" %}
+{% block content %}
+  {% set days = days or 7 %}
+  <div class="page-head">
+    <div class="hgroup"><h1>Overview</h1><div class="sub">License plate captures, confidence and review workflow</div></div>
+    <div class="head-actions">
+      <form method="get" action="{{ url_for('dashboard') }}">
+        <select class="select" name="days" onchange="this.form.submit()">
+          {% for d in [7, 30, 90, 365] %}
+            <option value="{{ d }}" {% if days|int == d %}selected{% endif %}>Last {{ d }} days</option>
+          {% endfor %}
+        </select>
+      </form>
+      <a class="btn" href="{{ url_for('sightings') }}">Open Sightings</a>
+      <a class="btn" href="{{ url_for('objects_page') }}">Objects</a>
+      <a class="btn" href="{{ url_for('clips') }}">Open Clips</a>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="card stat alt3"><div class="card-body"><div class="kpi">{{ stats.videos_done }}</div><div class="kpi-sub">clips processed <span class="tiny">/ {{ stats.videos_total }}</span></div></div></div>
+    <div class="card stat"><div class="card-body"><div class="kpi">{{ stats.detections_total }}</div><div class="kpi-sub">plate detections</div></div></div>
+    <div class="card stat alt1"><div class="card-body"><div class="kpi">{{ stats.plates_unique }}</div><div class="kpi-sub">unique plates seen</div></div></div>
+    <div class="card stat alt2"><div class="card-body"><div class="kpi">{{ stats.objects_total or 0 }}</div><div class="kpi-sub">objects recorded</div></div></div>
+  </div>
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-title-row">
+        <h2>Detections over time</h2>
+        {% if daily_counts and daily_counts|length %}
+          {% set today = daily_counts[0].count %}
+          <span class="badge ok">Today {{ today }}</span>
+        {% else %}<span class="badge">No data yet</span>{% endif %}
+      </div>
+      <div class="chart-wrap">
+        {% if daily_counts and daily_counts|length %}
+          {% set pts = daily_counts|reverse|list %}
+          {% set maxc = (pts | map(attribute='count') | max) %}
+          {% set n = pts|length %}
+          {% set W = 820 %}{% set H = 220 %}{% set padL = 44 %}{% set padR = 20 %}{% set padT = 18 %}{% set padB = 44 %}
+          {% set innerW = W - padL - padR %}{% set innerH = H - padT - padB %}{% set ns = namespace(points='') %}
+          {% for d in pts %}
+            {% set x = padL + (loop.index0 * (innerW / ((n-1) if n>1 else 1))) %}
+            {% set y = padT + (innerH - (innerH * (d.count / (maxc if maxc else 1)))) %}
+            {% set ns.points = ns.points ~ (x|round(2)) ~ ',' ~ (y|round(2)) ~ ' ' %}
+          {% endfor %}
+          <svg class="chart" viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="Detections line chart">
+            {% for i in range(0,5) %}{% set gy = padT + (innerH * (i/4)) %}<line class="grid" x1="{{ padL }}" y1="{{ gy }}" x2="{{ W-padR }}" y2="{{ gy }}" />{% endfor %}
+            <polyline class="line" points="{{ ns.points|trim }}" />
+            {% for d in pts %}
+              {% set x = padL + (loop.index0 * (innerW / ((n-1) if n>1 else 1))) %}
+              {% set y = padT + (innerH - (innerH * (d.count / (maxc if maxc else 1)))) %}
+              <circle class="dot" cx="{{ x }}" cy="{{ y }}" r="4" />
+              {% if loop.index0 == 0 or loop.index0 == n-1 or loop.index0 % 2 == 0 %}<text class="axis" x="{{ x }}" y="{{ H-18 }}" text-anchor="middle">{{ (d.date or '')[5:] }}</text>{% endif %}
+            {% endfor %}
+            <text class="axis" x="{{ padL }}" y="{{ padT+12 }}" text-anchor="start">max {{ maxc }}</text>
+          </svg>
+        {% else %}<div class="card-body"><div class="tiny">No detections yet. Trigger a scan and come back.</div></div>{% endif %}
+      </div>
+      <div class="filters"><span class="tiny">Quick actions</span><a class="btn" href="{{ url_for('watchlist_page') }}">Watchlist</a><a class="btn" href="{{ url_for('plates') }}">Plate Intelligence</a><a class="btn" href="{{ url_for('objects_page') }}">Objects</a><a class="btn" href="{{ url_for('status_page') }}">Scanner Status</a></div>
+      <div class="card-body"><div class="tiny">Recent captures</div></div>
+      {% if recent and recent|length %}
+        <table class="table"><thead><tr><th>Thumb</th><th>Plate</th><th>When</th><th>Camera</th><th>Conf</th><th></th></tr></thead><tbody>
+        {% for d in recent %}
+          <tr>
+            <td style="width:140px;"><a href="{{ url_for('detection_image', detection_id=d.id) }}" target="_blank"><img class="thumb" src="{{ url_for('detection_image', detection_id=d.id) }}" alt="thumb" /></a></td>
+            <td>{% set plate = (d.ocr_text or d.plate_text or '') %}<div class="plate-chip">{% if plate and plate != '(plate)' %}<a class="plate" href="{{ url_for('plate_detail', plate=plate) }}">{{ plate }}</a>{% else %}<span class="badge">(plate)</span>{% endif %}{% if d.ocr_state %}<span class="badge">{{ d.ocr_state }}</span>{% endif %}</div></td>
+            <td><div class="meta">{{ d.seen_utc or '—' }}</div></td>
+            <td><div class="meta">{{ d.camera or '—' }}</div></td>
+            <td>{% set c = (d.det_conf or 0) %}{% if c >= 0.5 %}<span class="badge ok">{{ '%.0f'|format(100*c) }}%</span>{% elif c >= 0.2 %}<span class="badge warn">{{ '%.0f'|format(100*c) }}%</span>{% else %}<span class="badge bad">{{ '%.0f'|format(100*c) }}%</span>{% endif %}</td>
+            <td style="text-align:right;"><a class="btn" href="{{ url_for('clip_detail', video_id=d.video_id) }}">Open</a><a class="btn" href="{{ url_for('video_stream', video_id=d.video_id) }}#t={{ (d.frame_time_s or 0)|int }}" target="_blank">Play</a></td>
+          </tr>
+        {% endfor %}</tbody></table>
+      {% else %}<div class="card-body"><div class="tiny">No captures yet.</div></div>{% endif %}
+    </section>
+    <aside style="display:flex; flex-direction:column; gap:12px;">
+      <section class="card" id="liveCard" style="min-height:220px;"><div class="card-title-row"><h2>Live scanner</h2><span id="liveDot" class="badge">…</span></div><div class="live-lines"><div class="live-item"><span>Status</span><span id="liveStatus">…</span></div><div class="live-item"><span>Task</span><span id="liveTask">…</span></div><div class="live-item"><span>Queue</span><span id="liveQueue">…</span></div><div class="live-item"><span>Next scan</span><span id="liveNext">…</span></div><div class="live-item"><span>CPAI</span><span id="liveCpai">…</span></div></div><pre id="liveLog" class="log" style="max-height:120px; min-height:84px; overflow:auto;"></pre></section>
+      <section class="card"><div class="card-title-row"><h2>Top plates</h2><span class="badge">most frequent</span></div>{% if top_plates and top_plates|length %}<table class="table"><thead><tr><th>Plate</th><th>Count</th><th>Last seen</th></tr></thead><tbody>{% for p in top_plates %}<tr><td><a class="plate" href="{{ url_for('plate_detail', plate=p.plate) }}">{{ p.plate }}</a></td><td>{{ p.count }}</td><td><div class="meta">{{ p.last_seen or '—' }}</div></td></tr>{% endfor %}</tbody></table>{% else %}<div class="card-body"><div class="tiny">No plates yet.</div></div>{% endif %}</section>
+      <section class="card"><div class="card-title-row"><h2>Recent objects</h2><span class="badge">overview</span></div>{% if recent_objects and recent_objects|length %}<table class="table"><thead><tr><th>Thumb</th><th>Object</th><th>When</th></tr></thead><tbody>{% for o in recent_objects %}<tr><td style="width:120px;"><a href="{{ url_for('object_image', object_id=o.id) }}" target="_blank"><img class="thumb" src="{{ url_for('object_image', object_id=o.id) }}" alt="object" /></a></td><td><span class="plate">{{ o.label }}</span></td><td><div class="meta">{{ o.seen_utc or '—' }}</div></td></tr>{% endfor %}</tbody></table>{% else %}<div class="card-body"><div class="tiny">No object detections yet.</div></div>{% endif %}</section>
+    </aside>
+  </div>
+  
+<style id="live-log-fit-fix">
+.grid-2 > aside { min-width: 0 !important; }
+#liveCard { min-width: 0 !important; overflow: hidden !important; }
+#liveLog {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+</style>
+
+  <script>
+    async function refreshLive() {
+      try {
+        const r = await fetch('/api/live', {cache:'no-store'});
+        const j = await r.json();
+        const st = j.state || {}; const q = j.queue || {}; const cp = j.cpai || {}; const ev = (j.events || []).slice(0, 8);
+        const status = String(st.status || 'unknown'); const dot = document.getElementById('liveDot'); dot.className = 'badge'; if (status.includes('scan')) dot.classList.add('warn'); else if (status.includes('error')) dot.classList.add('bad'); else dot.classList.add('ok'); dot.textContent = status;
+        document.getElementById('liveStatus').textContent = status; const task = (st.status_text || '') + (st.status_detail ? ` — ${st.status_detail}` : ''); document.getElementById('liveTask').textContent = task || '—'; document.getElementById('liveQueue').textContent = `new=${q.new||0} scanning=${q.scanning||0} done=${q.done||0} err=${q.error||0}`; document.getElementById('liveNext').textContent = `${st.next_scan_in_s || 0}s`;
+        let cpText = 'unknown'; if (cp.ok === true) cpText = 'OK'; if (cp.ok === false) cpText = 'DOWN'; document.getElementById('liveCpai').textContent = cpText + (cp.error ? ` (${cp.error})` : '');
+        const lines = [];
+        for (const e of ev) {
+          lines.push(`[${e.ts_local || e.ts_utc || ''}] ${e.level || ''} ${e.msg || ''}`);
+        }
+
+        const _liveLog = document.getElementById('liveLog');
+        if (_liveLog) {
+          _liveLog.textContent = lines.join('\n');
+          _liveLog.style.whiteSpace = 'pre-wrap';
+          _liveLog.style.overflowWrap = 'anywhere';
+          _liveLog.style.wordBreak = 'break-word';
+          _liveLog.style.overflowX = 'hidden';
+          _liveLog.style.maxWidth = '100%';
+        }
+      } catch (e) {
+        document.getElementById('liveStatus').textContent = 'offline';
+        document.getElementById('liveTask').textContent = String(e);
+      }
+    }
+    refreshLive(); setInterval(refreshLive, 2000);
+  </script>
+{% endblock %}

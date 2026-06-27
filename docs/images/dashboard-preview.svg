@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780" role="img" aria-labelledby="title desc">
+  <title id="title">TeslaCam Plate and Object Detection Dashboard Preview</title>
+  <desc id="desc">Synthetic dashboard preview with status cards, chart, recent sightings, and no real plate data.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#09111f"/><stop offset="1" stop-color="#17213a"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17243e"/><stop offset="1" stop-color="#0f1930"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity=".32"/></filter>
+  </defs>
+  <rect width="1400" height="780" fill="url(#bg)"/>
+  <rect x="28" y="28" width="250" height="724" rx="22" fill="#0a1324" stroke="#2b3a59"/>
+  <text x="58" y="90" fill="#f7fbff" font-size="26" font-family="Arial, Helvetica, sans-serif" font-weight="700">TeslaCam</text>
+  <text x="58" y="120" fill="#8ca3c7" font-size="15" font-family="Arial, Helvetica, sans-serif">ALPR + Object Detection</text>
+  <rect x="52" y="158" width="202" height="44" rx="10" fill="#234a84"/>
+  <text x="76" y="186" fill="#ffffff" font-size="16" font-family="Arial, Helvetica, sans-serif" font-weight="700">Overview</text>
+  <g fill="#9eb3d6" font-size="16" font-family="Arial, Helvetica, sans-serif">
+    <text x="76" y="246">Clips</text><text x="76" y="298">Sightings</text><text x="76" y="350">Plates</text><text x="76" y="402">Objects</text><text x="76" y="454">Watchlist</text><text x="76" y="506">Scanner Status</text><text x="76" y="558">Settings</text>
+  </g>
+  <text x="322" y="88" fill="#f8fbff" font-size="34" font-family="Arial, Helvetica, sans-serif" font-weight="700">Overview</text>
+  <text x="322" y="120" fill="#91a4c5" font-size="16" font-family="Arial, Helvetica, sans-serif">Local detection activity · synthetic preview only</text>
+  <rect x="1100" y="62" width="234" height="42" rx="21" fill="#183d31" stroke="#2f8363"/>
+  <circle cx="1125" cy="83" r="7" fill="#5ce09c"/><text x="1144" y="89" fill="#b9f2d2" font-size="15" font-family="Arial, Helvetica, sans-serif">Scanner online</text>
+  <g filter="url(#shadow)">
+    <rect x="322" y="158" width="245" height="126" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+    <rect x="590" y="158" width="245" height="126" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+    <rect x="858" y="158" width="245" height="126" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+    <rect x="1126" y="158" width="208" height="126" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif"><g fill="#94a8c9" font-size="14"><text x="346" y="195">CLIPS INDEXED</text><text x="614" y="195">PLATE DETECTIONS</text><text x="882" y="195">OBJECT DETECTIONS</text><text x="1150" y="195">WATCHLIST</text></g><g fill="#f7fbff" font-size="38" font-weight="700"><text x="346" y="250">2,184</text><text x="614" y="250">318</text><text x="882" y="250">742</text><text x="1150" y="250">4</text></g></g>
+  <rect x="322" y="312" width="664" height="284" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+  <text x="350" y="354" fill="#f7fbff" font-size="19" font-family="Arial, Helvetica, sans-serif" font-weight="700">Detection activity</text>
+  <text x="350" y="380" fill="#91a4c5" font-size="14" font-family="Arial, Helvetica, sans-serif">Last 7 days</text>
+  <g stroke="#2a3a5b" stroke-width="1"><path d="M360 540H950M360 480H950M360 420H950"/></g>
+  <path d="M370 526 L450 490 L530 508 L610 435 L690 470 L770 390 L850 448 L930 365" fill="none" stroke="#66a7ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M370 540 L450 505 L530 520 L610 472 L690 498 L770 440 L850 480 L930 412 L930 540 Z" fill="#66a7ff" opacity=".12"/>
+  <g fill="#d4e5ff"><circle cx="370" cy="526" r="5"/><circle cx="450" cy="490" r="5"/><circle cx="530" cy="508" r="5"/><circle cx="610" cy="435" r="5"/><circle cx="690" cy="470" r="5"/><circle cx="770" cy="390" r="5"/><circle cx="850" cy="448" r="5"/><circle cx="930" cy="365" r="5"/></g>
+  <rect x="1008" y="312" width="326" height="284" rx="18" fill="url(#card)" stroke="#2a3a5b"/>
+  <text x="1036" y="354" fill="#f7fbff" font-size="19" font-family="Arial, Helvetica, sans-serif" font-weight="700">Latest sightings</text>
+  <g font-family="Arial, Helvetica, sans-serif"><g fill="#a4b9dc" font-size="13"><text x="1036" y="392">FRONT · 18:42:08</text><text x="1036" y="456">LEFT REPEATER · 18:31:44</text><text x="1036" y="520">REAR · 18:17:02</text></g><g fill="#ffffff" font-size="17" font-weight="700"><text x="1036" y="417">[REDACTED]</text><text x="1036" y="481">[REDACTED]</text><text x="1036" y="545">[REDACTED]</text></g></g>
+  <rect x="322" y="624" width="1012" height="104" rx="18" fill="#0e1a2c" stroke="#2a3a5b"/>
+  <text x="350" y="666" fill="#f7fbff" font-size="17" font-family="Arial, Helvetica, sans-serif" font-weight="700">Privacy-ready project package</text>
+  <text x="350" y="697" fill="#9eb3d6" font-size="15" font-family="Arial, Helvetica, sans-serif">No real clips, databases, crops, images, or runtime configuration are included in the repository.</text>
+</svg>

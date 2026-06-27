@@ -1,0 +1,5 @@
+[Unit]
+Description=TeslaCam Plate Dashboard
+Wants=teslacam-plate-web.service teslacam-plate-scanner.service
+[Install]
+WantedBy=multi-user.target

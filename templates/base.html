@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or app_title }}</title>
+    <style>
+      .shell{display:flex;min-height:100vh;}
+      .sidebar{flex:0 0 84px;position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid #e6e9f0;}
+      .sidebar svg{width:24px;height:24px;}
+      .side-nav{display:flex;flex-direction:column;gap:10px;padding:10px;}
+      .side-link{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;font:12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+      .main{flex:1;min-width:0;}
+      .content{padding:16px;}
+      .appbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #e6e9f0;}
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    {% set p = request.path %}
+    <div class="shell">
+      <aside id="sidebar" class="sidebar" aria-label="Primary">
+        <div class="side-top">
+          <a class="logo" href="{{ url_for('dashboard') }}" aria-label="Home"><span class="logo-mark">P</span></a>
+          <button id="navClose" class="icon-btn side-close" type="button" aria-label="Close navigation">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.71 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3 1.41 1.42z"/></svg>
+          </button>
+        </div>
+        <nav class="side-nav">
+          <a href="{{ url_for('dashboard') }}" class="side-link {% if p.startswith('/dashboard') %}active{% endif %}" title="Overview"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13l9-9 9 9h-3v8h-4v-5h-4v5H6v-8H3z"/></svg><span>Overview</span></a>
+          <a href="{{ url_for('clips') }}" class="side-link {% if p.startswith('/clips') or p.startswith('/clip/') %}active{% endif %}" title="Clips"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4V4zm2 2v3h3V6H6zm0 5v3h3v-3H6zm0 5v3h3v-3H6zm5-10v3h3V6h-3zm0 5v3h3v-3h-3zm0 5v3h3v-3h-3zm5-10v3h3V6h-3zm0 5v3h3v-3h-3zm0 5v3h3v-3h-3z"/></svg><span>Clips</span></a>
+          <a href="{{ url_for('sightings') }}" class="side-link {% if p.startswith('/sightings') %}active{% endif %}" title="Sightings"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7.305 4.5 3.156 7.217 1 12c2.156 4.783 6.305 7.5 11 7.5s8.844-2.717 11-7.5c-2.156-4.783-6.305-7.5-11-7.5zm0 13a5.5 5.5 0 110-11 5.5 5.5 0 010 11zm0-9a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg><span>Sightings</span></a>
+          <a href="{{ url_for('plates') }}" class="side-link {% if p.startswith('/plates') or p.startswith('/plate/') %}active{% endif %}" title="Plates"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm2 0v10h14V7H5zm2 2h2v2H7V9zm0 4h2v2H7v-2zm4-4h6v2h-6V9zm0 4h6v2h-6v-2z"/></svg><span>Plates</span></a>
+          <a href="{{ url_for('objects_page') }}" class="side-link {% if p.startswith('/objects') %}active{% endif %}" title="Objects"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 2 3.5-5 3.5 5v5h-7v-5z"/></svg><span>Objects</span></a>
+          <a href="{{ url_for('watchlist_page') }}" class="side-link {% if p.startswith('/watchlist') %}active{% endif %}" title="Watchlist"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27l6.18 3.73-1.64-7.03L21 9.24l-7.19-.61L12 2 10.19 8.63 3 9.24l5.46 4.73-1.64 7.03L12 17.27z"/></svg><span>Watchlist</span></a>
+          <a href="{{ url_for('status_page') }}" class="side-link {% if p.startswith('/status') %}active{% endif %}" title="Status"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h3v8H3v-8zm5-6h3v14H8V7zm5 4h3v10h-3V11zm5-8h3v18h-3V3z"/></svg><span>Status</span></a>
+          <a href="{{ url_for('settings_page') }}" class="side-link {% if p.startswith('/settings') %}active{% endif %}" title="Settings"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.936c.036-.303.054-.609.054-.936s-.018-.633-.054-.936l2.037-1.583a.5.5 0 00.121-.638l-1.928-3.338a.5.5 0 00-.607-.221l-2.397.96a7.995 7.995 0 00-1.616-.936l-.364-2.54A.5.5 0 0014.812 3h-3.624a.5.5 0 00-.494.422l-.364 2.54a7.995 7.995 0 00-1.616.936l-2.397-.96a.5.5 0 00-.607.221L3.44 9.783a.5.5 0 00.121.638l2.037 1.583c-.036.303-.054.609-.054.936s.018.633.054.936L3.561 14.46a.5.5 0 00-.121.638l1.928 3.338c.121.21.362.297.607.221l2.397-.96c.51.391 1.05.718 1.616.936l.364 2.54a.5.5 0 00.494.422h3.624a.5.5 0 00.494-.422l.364-2.54c.566-.218 1.106-.545 1.616-.936l2.397.96a.5.5 0 00.607-.221l1.928-3.338a.5.5 0 00-.121-.638l-2.037-1.583zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/></svg><span>Settings</span></a>
+        </nav>
+        <div class="side-foot"><div class="side-status" title="Scanner status"><span id="navScanDot" class="dot"></span><span id="navScanStatus" class="tiny">…</span></div><button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a6 6 0 110-12 6 6 0 010 12zm0-16a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm0 18a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm10-8a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zM5 12a1 1 0 01-1 1H2a1 1 0 110-2h2a1 1 0 011 1zm14.95-7.07a1 1 0 010 1.41l-1.41 1.41a1 1 0 11-1.41-1.41l1.41-1.41a1 1 0 011.41 0zM6.87 18.15a1 1 0 010 1.41l-1.41 1.41a1 1 0 11-1.41-1.41l1.41-1.41a1 1 0 011.41 0zm12.08 1.41a1 1 0 01-1.41 0l-1.41-1.41a1 1 0 111.41-1.41l1.41 1.41a1 1 0 010 1.41zM6.87 5.85a1 1 0 01-1.41 0L4.05 4.44A1 1 0 115.46 3.03l1.41 1.41a1 1 0 010 1.41z"/></svg></button></div>
+      </aside>
+      <div id="navOverlay" class="overlay" aria-hidden="true"></div>
+      <div class="main">
+        <header class="appbar">
+          <button id="navToggle" class="icon-btn" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
+          <div class="appbar-grow">
+            <form class="global-search" action="{{ url_for('plates') }}" method="get" role="search"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg><input name="q" placeholder="Search plates…" autocomplete="off" /></form>
+          </div>
+          <div class="appbar-actions"><button id="scanNowBtn" class="btn primary" type="button">Scan now</button><a class="icon-btn" href="{{ url_for('settings_page') }}" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.936c.036-.303.054-.609.054-.936s-.018-.633-.054-.936l2.037-1.583a.5.5 0 00.121-.638l-1.928-3.338a.5.5 0 00-.607-.221l-2.397.96a7.995 7.995 0 00-1.616-.936l-.364-2.54A.5.5 0 0014.812 3h-3.624a.5.5 0 00-.494.422l-.364 2.54a7.995 7.995 0 00-1.616.936l-2.397-.96a.5.5 0 00-.607.221L3.44 9.783a.5.5 0 00.121.638l2.037 1.583c-.036.303-.054.609-.054.936s.018.633.054.936L3.561 14.46a.5.5 0 00-.121.638l1.928 3.338c.121.21.362.297.607.221l2.397-.96c.51.391 1.05.718 1.616.936l.364 2.54a.5.5 0 00.494.422h3.624a.5.5 0 00.494-.422l.364-2.54c.566-.218 1.106-.545 1.616-.936l2.397.96a.5.5 0 00.607-.221l1.928-3.338a.5.5 0 00-.121-.638l-2.037-1.583zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/></svg></a><div class="scan-pill" title="Scanner status"><span id="scanDot" class="dot"></span><span id="scanStatus" class="tiny">…</span></div></div>
+        </header>
+        <main class="content">{% block content %}{% endblock %}</main>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  </body>
+</html>

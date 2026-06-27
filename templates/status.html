@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-head">
+    <div class="hgroup">
+      <h1>Status</h1>
+      <div class="sub">Scanner health, queue state, and recent activity</div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="card stat alt3"><div class="card-body"><div class="kpi">{{ stats.videos_total }}</div><div class="kpi-sub">videos indexed</div></div></div>
+    <div class="card stat"><div class="card-body"><div class="kpi">{{ stats.videos_done }}</div><div class="kpi-sub">processed</div></div></div>
+    <div class="card stat alt2"><div class="card-body"><div class="kpi">{{ stats.videos_error }}</div><div class="kpi-sub">errors</div></div></div>
+    <div class="card stat alt1"><div class="card-body"><div class="kpi">{{ stats.detections_total }}</div><div class="kpi-sub">detections</div></div></div>
+  </div>
+
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-title-row">
+        <h2>Scanner state</h2>
+        <span class="badge">{{ state.status or 'unknown' }}</span>
+      </div>
+      <div class="card-body">
+        <div class="meta">
+          <span>Last start: {{ state.last_scan_start or '—' }}</span>
+          <span>Last end: {{ state.last_scan_end or '—' }}</span>
+          <span>Current: {{ state.current_video or '—' }}</span>
+          <span>Camera: {{ state.current_cam or '—' }}</span>
+          <span>Frame: {{ state.current_frame or 0 }}</span>
+          <span>Last plate: {{ state.last_plate or '—' }}</span>
+        </div>
+        {% if state.last_error %}
+          <div style="margin-top:12px;"><span class="badge bad">{{ state.last_error }}</span></div>
+        {% endif %}
+      </div>
+
+      <div class="card-title-row">
+        <h2>Folders</h2>
+        <span class="badge">TeslaCam</span>
+      </div>
+      <table class="table">
+        <thead><tr><th>Folder</th><th>Total</th><th>Done</th><th>Error</th></tr></thead>
+        <tbody>
+          {% for f in per_folder %}
+            <tr>
+              <td>{{ f.folder }}</td>
+              <td>{{ f.total }}</td>
+              <td>{{ f.done }}</td>
+              <td>{% if f.error %}<span class="badge bad">{{ f.error }}</span>{% else %}0{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <aside class="card">
+      <div class="card-title-row">
+        <h2>Recent events</h2>
+        <span class="badge">log</span>
+      </div>
+      <pre class="log">{% for e in events %}[{{ e.ts_local or '' }}] {{ e.level or '' }} {{ e.msg or '' }}
+{% endfor %}</pre>
+
+      <div class="card-title-row">
+        <h2>Detections by camera</h2>
+        <span class="badge">breakdown</span>
+      </div>
+      {% if cams and cams|length %}
+        <table class="table">
+          <thead><tr><th>Camera</th><th>Det</th><th>Avg</th><th>Max</th></tr></thead>
+          <tbody>
+            {% for c in cams %}
+              <tr>
+                <td>{{ c.camera }}</td>
+                <td>{{ c.detections }}</td>
+                <td>{{ '%.3f'|format(c.avg_conf or 0) }}</td>
+                <td>{{ '%.3f'|format(c.max_conf or 0) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="card-body"><div class="tiny">No detections yet.</div></div>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}

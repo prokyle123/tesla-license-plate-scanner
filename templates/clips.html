@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-head">
+    <div class="hgroup">
+      <h1>Clips</h1>
+      <div class="sub">Browse TeslaCam clips by camera, status, plate, or detected object label</div>
+    </div>
+  </div>
+  <section class="card">
+    <div class="filters">
+      <form method="get" action="{{ url_for('clips') }}" style="display:flex; flex-wrap:wrap; gap:10px; width:100%;">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="Search filename…" />
+        <input type="text" name="plate" value="{{ plate_q or '' }}" placeholder="Plate contains…" />
+        <input type="text" name="object" value="{{ object_label or '' }}" placeholder="Object label (car, person, truck)…" />
+        <select name="camera">
+          <option value="">All cameras</option>
+          {% for cam in cameras %}<option value="{{ cam }}" {% if camera==cam %}selected{% endif %}>{{ cam }}</option>{% endfor %}
+        </select>
+        <select name="status">
+          <option value="">All statuses</option>
+          {% for s in ['new','scanning','scanned','error'] %}<option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+        <button class="btn primary" type="submit">Filter</button>
+        <a class="btn" href="{{ url_for('clips') }}">Reset</a>
+      </form>
+    </div>
+    <div class="card-body">
+      {% if clips and clips|length %}
+        <div class="clip-grid">
+          {% for c in clips %}
+            {% set object_list = (c.object_labels or '').split(',') if c.object_labels else [] %}
+            <a class="clip-card" href="{{ url_for('clip_detail', video_id=c.id) }}">
+              <img class="clip-thumb" src="{{ url_for('clip_thumb', video_id=c.id) }}" alt="thumb" />
+              <div class="clip-body">
+                <div class="clip-row">
+                  {% if c.status == 'scanned' %}<span class="badge ok">scanned</span>
+                  {% elif c.status == 'error' %}<span class="badge bad">error</span>
+                  {% else %}<span class="badge warn">{{ c.status or 'new' }}</span>{% endif %}
+                  <span class="tiny">{{ c.camera or '—' }}</span>
+                </div>
+                <div class="clip-title">{{ c.rel_path or c.path }}</div>
+                <div class="clip-row">
+                  <div class="kpi-mini">Detections: <b>{{ c.detections or 0 }}</b></div>
+                  <div class="kpi-mini">Objects: <b>{{ c.object_count or 0 }}</b></div>
+                  <div class="kpi-mini">Best: <b>{{ '%.0f'|format(100*(c.best_conf or 0)) }}%</b></div>
+                </div>
+                {% if c.best_plate %}
+                  <div class="clip-row"><span class="plate">{{ c.best_plate }}</span><span class="tiny">{{ c.scanned_utc or '' }}</span></div>
+                {% else %}
+                  <div class="meta">No plate detected above threshold</div>
+                {% endif %}
+                {% if object_list %}
+                  <div class="clip-row" style="flex-wrap:wrap; gap:6px;">
+                    {% for lbl in object_list[:6] %}
+                      <span class="badge">{{ lbl }}</span>
+                    {% endfor %}
+                    {% if object_list|length > 6 %}<span class="tiny">+{{ object_list|length - 6 }} more</span>{% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="tiny">No clips match this filter yet.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

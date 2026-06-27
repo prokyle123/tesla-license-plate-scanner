@@ -1,0 +1,15 @@
+[Unit]
+Description=TeslaCam Plate Dashboard (scanner)
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/teslacam-plate-dashboard
+ExecStart=/opt/teslacam-plate-dashboard/venv/bin/python -m scanner.run_scanner --config /opt/teslacam-plate-dashboard/config.json
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=teslacam-plate.target

@@ -1,0 +1,37 @@
+{
+  "app": {
+    "host": "0.0.0.0",
+    "port": 5057
+  },
+  "paths": {
+    "teslacam_root": "/mnt/gadget/part1-ro/TeslaCam",
+    "db_path": "/opt/teslacam-plate-dashboard/data/plates.db",
+    "static_dir": "/opt/teslacam-plate-dashboard/static"
+  },
+  "scanner": {
+    "folders": ["RecentClips", "SentryClips", "SavedClips"],
+    "scan_sleep_s": 60,
+    "max_videos_per_pass": 40,
+    "frame_interval_s": 2,
+    "cpai_base_url": "http://127.0.0.1:32168",
+    "cpai_model": "license-plate",
+    "cpai_timeout_s": 12,
+    "cpai_min_det_conf": 0.05,
+    "store_all_detections": true,
+    "ocr_enabled": false,
+    "ocr_min_conf": 45,
+    "ocr_cpai_enabled": false,
+    "ocr_cpai_endpoint": "/v1/vision/ocr",
+    "tesseract_cmd": "",
+    "preview_jpeg_quality": 85,
+    "object_detection_enabled": true,
+    "object_endpoint": "/v1/vision/detection",
+    "object_min_conf": 0.35,
+    "object_frame_interval_s": 10.0,
+    "auto_cleanup_enabled": true,
+    "generated_retention_days": 14,
+    "event_retention_days": 30,
+    "delete_source_clips": false,
+    "source_clip_retention_days": 0
+  }
+}
