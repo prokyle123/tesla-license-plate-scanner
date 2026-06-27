@@ -1,0 +1,12 @@
+services:
+  codeproject-ai:
+    image: codeproject/ai-server:rpi64
+    container_name: codeproject-ai
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "32168:32168"
+    volumes:
+      - ./data:/etc/codeproject/ai
+      - ./modules:/app/modules
+      - /dev/bus/usb:/dev/bus/usb

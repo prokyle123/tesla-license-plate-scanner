@@ -1,217 +1,162 @@
-﻿# Tesla License Plate Scanner | AI Dashboard for TeslaUSB & TeslaCam Footage
-### Review Tesla Dashcam, Sentry Mode, and Saved Clip footage using the car's built-in cameras
+# Tesla License Plate Scanner
+### AI dashboard for TeslaCam footage, TeslaUSB backups, and Tesla's built-in cameras.
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Web-Flask-black?logo=flask)
-![CodeProject.AI](https://img.shields.io/badge/AI-CodeProject.AI-purple)
-![Local First](https://img.shields.io/badge/Privacy-Local--First-success)
-![License](https://img.shields.io/badge/License-MIT-green)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Web-Flask-111111?logo=flask)
+![CodeProject.AI](https://img.shields.io/badge/AI-CodeProject.AI-6D28D9)
+![Local First](https://img.shields.io/badge/Privacy-Local--First-16A34A)
+![License](https://img.shields.io/badge/License-MIT-16A34A)
 
-A self-hosted, privacy-first dashboard for reviewing **TeslaCam footage already saved by a Tesla vehicle**. It indexes Dashcam, Sentry Mode, and Saved Clip video; detects visible license plates with a local CodeProject.AI endpoint; optionally uses OCR to read plate text; reduces duplicate sightings; and gives you one searchable dashboard for clips, plates, detections, objects, and scanner status.
+Turn Tesla camera footage into a **searchable local intelligence dashboard**.
 
-> [!IMPORTANT]
-> This project processes footage you already have permission to review. It is not a real-time surveillance system, does not access Tesla vehicle systems, does not identify vehicle owners, and does not include any government or commercial plate-lookup database.
+Tesla vehicles can save a lot of Dashcam, Sentry Mode, and Saved Clip footage — but it normally lives as folders full of video files. Tesla License Plate Scanner is the analysis layer that scans those folders, samples frames, uses a local AI detector to find visible license plates, optionally runs OCR, reduces duplicate captures, and organizes the results by time, camera, clip, confidence, and event.
+
+> **Built to work alongside TeslaUSB.** TeslaUSB runs on a Raspberry Pi and can preserve or back up TeslaCam footage to storage. This project scans that saved footage — or any compatible TeslaCam folder — and turns it into a searchable review system.
 
 ![Tesla License Plate Scanner dashboard preview](docs/images/dashboard-preview.svg)
 
----
-
-## Table of Contents
-
-- [What It Does](#what-it-does)
-- [How It Works](#how-it-works)
-- [Features](#features)
-- [System Architecture](#system-architecture)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [CodeProject.AI Integration](#codeprojectai-integration)
-- [Service Management](#service-management)
-- [Development Run](#development-run)
-- [Project Layout](#project-layout)
-- [Privacy, Safety, and Responsible Use](#privacy-safety-and-responsible-use)
-- [Known Limitations](#known-limitations)
-- [Documentation](#documentation)
+> **Privacy-first:** This repository contains no TeslaCam footage, real plate images, live database, secret configuration, or vehicle-owner lookup data. The preview above uses synthetic demonstration data only.
 
 ---
 
+## Why It Exists
+
+Tesla's built-in cameras can capture useful footage before, during, and after an event. The hard part is finding the important moment in a pile of video files.
+
+Instead of opening clip after clip and hunting through footage manually, this project can help turn a TeslaCam archive into a local, searchable visual record of what the vehicle captured.
+
+### What It Can Do
+
+- Scan TeslaCam `RecentClips`, `SentryClips`, and `SavedClips` folders.
+- Work with TeslaUSB backups, a Tesla USB drive, external SSDs, NAS shares, or a copied TeslaCam archive.
+- Sample clips at a configurable interval rather than processing every video frame.
+- Send frames to a local CodeProject.AI custom plate-detection endpoint.
+- Generate reviewable plate crops tied to the exact source clip and camera.
+- Optionally run Tesseract OCR or CodeProject.AI OCR against detected plate regions.
+- Record timestamps, source camera, confidence, clip path, OCR text, and local thumbnails.
+- Reduce duplicate sightings across nearby frames and multiple camera views.
+- Track general object detections separately from plate results.
+- Search, filter, and review everything in a responsive Flask dashboard.
+- Run locally on a Raspberry Pi, mini PC, Linux machine, or home server.
+
+---
 
 ## TeslaUSB + TeslaCam Workflow
 
-> **Turn Tesla’s built-in cameras into a searchable AI footage system.**
+TeslaUSB and Tesla License Plate Scanner solve different parts of the same workflow.
 
-TeslaUSB runs on a Raspberry Pi and can act as the TeslaCam USB drive while automatically preserving and backing up Dashcam, Sentry Mode, and Saved Clip footage to attached storage.
-
-This project is the **AI analysis layer**. It scans those saved TeslaCam-compatible folders, detects visible license plates, attempts OCR text extraction, reduces duplicate sightings, and turns raw camera footage into a searchable local dashboard.
+| Layer | Role |
+| --- | --- |
+| **Tesla vehicle** | Captures Dashcam, Sentry Mode, and Saved Clip camera footage. |
+| **TeslaUSB on a Raspberry Pi** | Acts as TeslaCam storage and can automatically preserve or back up video clips to attached storage. |
+| **Tesla License Plate Scanner** | Watches TeslaCam-compatible folders, processes saved footage with AI, and builds a searchable dashboard. |
 
 ```text
 Tesla Built-In Cameras
         ↓
 Tesla Dashcam / Sentry / Saved Clips
         ↓
-TeslaUSB running on a Raspberry Pi
+TeslaUSB running on a Raspberry Pi  (optional capture + backup layer)
         ↓
-TeslaCam folders saved to Pi storage, SSD, NAS, or backup drive
+TeslaCam folders on Pi storage, SSD, NAS, or backup drive
         ↓
 Tesla License Plate Scanner
         ↓
 AI Detection + OCR + Searchable Local Dashboard
 ```
 
-### Built to work with TeslaUSB
-
-TeslaUSB handles the always-on camera-storage and backup side of the setup. This project handles the intelligence side: reviewing footage, finding plate detections, reading likely text, grouping repeated sightings, and making everything searchable.
-
-TeslaUSB is optional. The scanner can analyze any compatible TeslaCam folder, including:
-
-- TeslaUSB backups from a Raspberry Pi
-- A copied Tesla USB drive
-- TeslaCam folders on an external SSD
-- TeslaCam archives stored on a NAS
-- Dashcam, Sentry Mode, or Saved Clip folders copied to a home server
-
-## What It Does
-Tesla vehicles can record surround-view video through Dashcam, Sentry Mode, and Saved Clips. Those recordings are useful after a parking-lot incident, a drive, a Sentry event, or simply when you need to review what happened around the vehicle. The downside is that one event can contain several video streams and hundreds of frames.
-
-Tesla License Plate Scanner turns a local TeslaCam archive into a searchable review workspace. It is designed to help you work through already-recorded footage faster while keeping the data under your control.
-
-### Core capabilities
-
-- Indexes TeslaCam `RecentClips`, `SentryClips`, and `SavedClips` folders.
-- Samples video frames at configurable intervals instead of processing every frame.
-- Sends sampled frames to a local **CodeProject.AI** license-plate detector.
-- Saves a plate crop, detection confidence, source camera, event time, and source clip reference.
-- Optionally runs **Tesseract OCR** and/or **CodeProject.AI OCR** on detected plate regions.
-- Reduces repeated sightings from nearby frames and related clips.
-- Tracks general object detections separately from plate results when enabled.
-- Stores its local metadata in SQLite and generated previews on your own storage.
-- Provides a browser dashboard for clip review, plate search, sightings, watchlists, settings, status, and maintenance.
-- Runs as separate web and scanner services through `systemd`.
+TeslaUSB is optional. The scanner can analyze any TeslaCam-compatible folder that is locally available or mounted from another system.
 
 ---
 
 ## How It Works
 
-### 1. Tesla records the footage
+### 1. Tesla records the scene
 
-Tesla Dashcam, Sentry Mode, and Saved Clips save video to USB or a TeslaUSB-style storage device. Your available folders normally look similar to this:
+The Tesla saves video footage from its built-in cameras to the TeslaCam folder structure. Available camera streams, clips, and event formats can vary by model, software version, and event type.
 
 ```text
 TeslaCam/
-â”œâ”€â”€ RecentClips/
-â”œâ”€â”€ SentryClips/
-â””â”€â”€ SavedClips/
+├── RecentClips/
+├── SentryClips/
+└── SavedClips/
 ```
 
-The exact video files and camera availability vary by vehicle model, software version, recording mode, and event type.
+### 2. TeslaUSB or another backup method preserves the footage
 
-### 2. The scanner indexes the TeslaCam archive
+TeslaUSB can run on a Raspberry Pi in the vehicle, provide the TeslaCam storage interface, and keep a backup copy of video on Pi-attached storage. You can also point this project at a manual copy, NAS archive, or external drive.
 
-The background scanner looks at the configured TeslaCam root folder, finds compatible video clips, and samples frames from available camera streams. It can use a direct USB mount, a copied backup folder, an SSD archive, or a network-mounted TeslaCam folder.
+### 3. The scanner indexes clips and samples frames
 
-### 3. Local AI looks for plate-shaped regions
+The background scanner finds compatible videos, reads the camera metadata, and pulls frames at a configurable interval. This makes long TeslaCam archives practical to review without treating every frame as a separate AI job.
 
-Selected frames are sent to a **local CodeProject.AI** custom vision endpoint. The detector returns bounding boxes and confidence values for regions that appear to contain a license plate.
+### 4. A local AI endpoint detects likely plates
 
-The scanner stores a review crop along with source details such as the camera label, timestamp, source clip, event folder, and detection confidence.
-
-### 4. OCR can attempt to read plate text
-
-When enabled, the scanner can process a plate crop with local Tesseract OCR or CodeProject.AI OCR. The extracted text is stored as a review aid alongside the original detection.
-
-OCR is optional and should never be treated as perfect. Results can be affected by distance, glare, motion blur, weather, compression, angle, and plate design.
-
-### 5. Nearby duplicates are reduced
-
-A single vehicle may appear in several frames or across multiple Tesla cameras. The scanner uses available metadata such as plate text, time window, source clip, camera, detection position, and confidence to limit repeated entries.
-
-### 6. The dashboard makes results reviewable
-
-The Flask dashboard turns the local scan data into searchable pages. You can review a specific event, filter by camera, find a recognized plate string, inspect a detection crop, see linked clips, or check whether the scanner is running normally.
-
-![TeslaCam processing pipeline](docs/images/pipeline.svg)
-
----
-
-## Features
-
-| Area | Included capabilities |
-| --- | --- |
-| **TeslaCam indexing** | Reads `RecentClips`, `SentryClips`, and `SavedClips`; keeps clip and event context; configurable scan interval and frame sampling. |
-| **License-plate detection** | Local CodeProject.AI custom-model integration, configurable detector confidence threshold, local crops and metadata. |
-| **OCR enrichment** | Optional Tesseract OCR and optional CodeProject.AI OCR, OCR confidence filtering, stored recognized text. |
-| **Duplicate control** | Limits repeated entries from nearby frames, clips, and cameras to keep review results useful. |
-| **Dashboard** | Responsive Flask interface with dashboard, clips, sightings, plates, objects, watchlist, status, and settings pages. |
-| **Object tracking** | Optional general object-detection endpoint running alongside plate scanning. |
-| **Local storage** | SQLite metadata database plus local generated previews; original source footage is left alone by default. |
-| **Retention cleanup** | Configurable cleanup for generated images and old events. Source video deletion is disabled by default. |
-| **Deployment** | Install script, safe configuration example, and paired `systemd` services for a web UI and background scanner. |
-
-### Dashboard pages
-
-| Page | Purpose |
-| --- | --- |
-| **Dashboard** | Recent activity, totals, scanner health, and quick navigation. |
-| **Clips** | Browsable TeslaCam clip inventory with event context and linked detections. |
-| **Sightings** | Time-ordered review view for all stored detections. |
-| **Plates** | Searchable plate text, OCR confidence, crops, and appearance history. |
-| **Plate Detail** | Timeline, associated images, related clips, and camera breakdown for a specific plate entry. |
-| **Objects** | Optional general object detections separate from plate-specific results. |
-| **Watchlist** | Local plate-text entries you want flagged for later review. |
-| **Scanner Status** | Current scan state, last pass timing, counts, and errors. |
-| **Settings** | Runtime thresholds, OCR controls, retention controls, and endpoint configuration. |
-
----
-
-## System Architecture
-
-The project is split into two local services that share a SQLite database:
+Selected frames go to a local CodeProject.AI endpoint. The project expects a compatible custom endpoint in this format:
 
 ```text
-TeslaCam video archive
-        â”‚
-        â–¼
-Background scanner
-  - indexes clips
-  - samples frames
-  - sends frames to AI
-  - optional OCR
-  - saves local metadata/crops
-        â”‚
-        â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º Local CodeProject.AI
-        â”‚                 - custom plate detector
-        â”‚                 - optional object detector
-        â”‚                 - optional OCR endpoint
-        â–¼
-SQLite database + generated image previews
-        â”‚
-        â–¼
-Flask / Waitress dashboard on port 5057
+{cpai_base_url}/v1/vision/custom/{cpai_model}
 ```
 
-The scanner and web app use SQLite in WAL mode so normal local reads can happen while the scan process stores new results.
+For the default configuration, `cpai_model: "license-plate"` means the app calls:
+
+```text
+http://127.0.0.1:32168/v1/vision/custom/license-plate
+```
+
+The detector returns likely plate regions and confidence values. The scanner saves a crop and links it back to the original clip, camera label, event, and frame time.
+
+### 5. OCR tries to read the plate text
+
+OCR is optional. When enabled, the project can use local Tesseract OCR and/or a CodeProject.AI OCR endpoint to attempt alphanumeric text extraction.
+
+Because real footage can include blur, glare, rain, darkness, distance, compression artifacts, and poor angles, OCR is a **review aid**, not guaranteed identification.
+
+### 6. Duplicate sightings are reduced
+
+The same vehicle may appear in nearby frames and multiple camera views. The scanner uses available information such as time, source clip, camera, plate text, confidence, and detection position to keep repeated results from overwhelming the dashboard.
+
+### 7. Everything is searchable in one place
+
+The dashboard brings clips, plate sightings, OCR attempts, object detections, scanner status, configuration, and locally generated previews into one browser interface.
+
+![Processing pipeline](docs/images/pipeline.svg)
+
+---
+
+## Dashboard Features
+
+| Area | What It Provides |
+| --- | --- |
+| **Overview** | KPI cards, detection timeline, latest captures, quick actions, and a live scanner panel. |
+| **Global Search** | Quick plate-text search from the top bar. |
+| **Clips** | TeslaCam video inventory with linked detections and source information. |
+| **Sightings** | Time-ordered detection review with camera, confidence, and media links. |
+| **Plate Intelligence** | Plate-text search, OCR metadata, detection history, and image crops. |
+| **Objects** | Optional general object detections, separate from plate detections. |
+| **Watchlist** | Local-only workflow for plate text you choose to flag or review. |
+| **Scanner Status** | Current pass state, queue, next scan, CodeProject.AI availability, and live logs. |
+| **Settings** | Detection thresholds, OCR options, cleanup settings, folders, and endpoint configuration. |
+| **Responsive UI** | Compact icon rail on desktop, mobile slide-over navigation, light/dark themes, and image-first review tables. |
 
 ---
 
 ## Requirements
 
-### Recommended hardware
+### Hardware
 
-This project runs best on a Linux machine that stays powered on and has access to your TeslaCam footage.
+A Linux host, mini PC, Raspberry Pi, or home server can run the project. More CPU and faster storage improve scan speed on larger archives.
 
-A Raspberry Pi 5, small Intel/AMD mini PC, home server, or other multi-core Linux host is recommended for larger archives. Plate detection itself is performed by your CodeProject.AI instance, so the hardware needed also depends on where that AI service runs.
+You need:
 
-### Required components
+- TeslaCam footage locally available or mounted from another system.
+- Python 3.
+- Adequate storage for the local SQLite database and generated preview images.
+- A separately installed CodeProject.AI Server.
+- A compatible custom license-plate model/endpoint.
+- Optional Tesseract OCR for local text extraction.
 
-- Linux host, Raspberry Pi, or similar always-on local machine.
-- Python 3 and `python3-venv`.
-- `ffmpeg` for video work.
-- `python3-opencv` for frame handling.
-- A mounted or copied TeslaCam archive.
-- A reachable CodeProject.AI installation with a compatible custom license-plate model.
-- Optional: `tesseract-ocr` for local OCR.
-
-### Packages installed by `install.sh`
+### Project dependencies installed by `install.sh`
 
 ```text
 python3
@@ -225,67 +170,92 @@ rsync
 
 ---
 
-## Quick Start
+## Install Tesla License Plate Scanner
 
-### 1. Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/prokyle123/tesla-license-plate-scanner.git
 cd tesla-license-plate-scanner
 ```
 
-### 2. Run the installer
+Run the installer on the Linux host that will run the dashboard:
 
 ```bash
 sudo bash install.sh
 ```
 
-The installer deploys the project to:
+The installer deploys the application under:
 
 ```text
 /opt/teslacam-plate-dashboard
 ```
 
-It creates a safe local configuration file at:
+It creates a local configuration file here:
 
 ```text
 /opt/teslacam-plate-dashboard/config.json
 ```
 
-### 3. Set your TeslaCam location and local AI endpoint
+Edit the settings:
 
 ```bash
 sudo nano /opt/teslacam-plate-dashboard/config.json
 ```
 
-At a minimum, set the TeslaCam root path and make sure the CodeProject.AI URL and model name match your setup.
-
-### 4. Restart the services
+Restart services after changing configuration:
 
 ```bash
 sudo systemctl restart teslacam-plate-web.service
 sudo systemctl restart teslacam-plate-scanner.service
 ```
 
-### 5. Open the dashboard
-
-From a trusted device on your local network:
+Open the dashboard from a trusted local device:
 
 ```text
-http://YOUR-HOST-IP:5057
+http://YOUR-LINUX-HOST-IP:5057
 ```
 
 ---
 
-## Configuration
+## Install CodeProject.AI Server
 
-Start from the included safe-to-share example:
+CodeProject.AI is the local AI server that this project calls for plate and object detection. It runs on the same machine or another reachable machine on your private network.
+
+**Start here:** [CodeProject.AI Setup Guide](docs/CODEPROJECT_AI.md)
+
+The short version for an x64 Linux machine with Docker is:
+
+```bash
+sudo mkdir -p /opt/codeproject-ai/{data,modules}
+
+docker run --name CodeProject.AI -d \
+  --restart unless-stopped \
+  -p 32168:32168 \
+  -v /opt/codeproject-ai/data:/etc/codeproject/ai \
+  -v /opt/codeproject-ai/modules:/app/modules \
+  codeproject/ai-server
+```
+
+Then open the CodeProject.AI dashboard:
+
+```text
+http://YOUR-CPAI-HOST:32168
+```
+
+For an ARM64 Linux system, use `codeproject/ai-server:arm64`. For Raspberry Pi-specific deployments, CodeProject.AI documents the `codeproject/ai-server:rpi64` image. The included guide explains both paths, health checks, app configuration, and the important custom-model requirement.
+
+> **Important:** CodeProject.AI itself is separate from this project. The `license-plate` endpoint and its compatible model are not bundled in this repository. Configure your custom model in CodeProject.AI, then set `cpai_model` in this project's `config.json` to the endpoint name it exposes.
+
+---
+
+## Example Configuration
+
+Start with the safe example configuration:
 
 ```bash
 cp config.example.json config.json
 ```
-
-Example:
 
 ```json
 {
@@ -294,108 +264,67 @@ Example:
     "port": 5057
   },
   "paths": {
-    "teslacam_root": "/mnt/gadget/part1-ro/TeslaCam",
-    "db_path": "/opt/teslacam-plate-dashboard/data/plates.db",
-    "static_dir": "/opt/teslacam-plate-dashboard/static"
+    "teslacam_root": "/path/to/TeslaCam"
   },
   "scanner": {
     "folders": ["RecentClips", "SentryClips", "SavedClips"],
     "scan_sleep_s": 60,
-    "max_videos_per_pass": 40,
     "frame_interval_s": 2,
     "cpai_base_url": "http://127.0.0.1:32168",
     "cpai_model": "license-plate",
     "cpai_min_det_conf": 0.05,
     "ocr_enabled": false,
-    "ocr_cpai_enabled": false,
-    "object_detection_enabled": true,
-    "generated_retention_days": 14,
-    "event_retention_days": 30,
-    "delete_source_clips": false
+    "ocr_min_conf": 45,
+    "object_detection_enabled": true
   }
 }
 ```
 
-### Important settings
-
 | Setting | Meaning |
 | --- | --- |
-| `paths.teslacam_root` | Folder that contains your `TeslaCam` clip folders. |
-| `scanner.scan_sleep_s` | Seconds the scanner waits between passes. |
-| `scanner.max_videos_per_pass` | Maximum video files handled in one scan pass. |
-| `scanner.frame_interval_s` | Sampling interval for plate detection. Smaller values mean more frames and more work. |
-| `scanner.cpai_base_url` | Address of your CodeProject.AI server, normally local port `32168`. |
-| `scanner.cpai_model` | Custom CodeProject.AI model name used by the plate detector. |
-| `scanner.cpai_min_det_conf` | Minimum plate-detection confidence to keep. |
-| `scanner.ocr_enabled` | Enables local Tesseract OCR. |
-| `scanner.ocr_cpai_enabled` | Enables OCR through CodeProject.AI. |
-| `scanner.object_detection_enabled` | Enables optional general object detections. |
-| `scanner.generated_retention_days` | Days to retain generated crops and frames before cleanup. |
-| `scanner.delete_source_clips` | Leave this `false` unless you intentionally want source video cleanup behavior. |
-
-> [!WARNING]
-> `config.json` is intentionally ignored by Git. Keep API keys, internal IP addresses, personal paths, and any runtime settings out of commits.
-
----
-
-## CodeProject.AI Integration
-
-This repository does **not** bundle CodeProject.AI or a custom plate model. You must run or access a compatible local CodeProject.AI installation separately.
-
-The configured custom plate endpoint follows this pattern:
-
-```text
-http://YOUR-CPAI-HOST:32168/v1/vision/custom/license-plate
-```
-
-With the default example configuration:
-
-```json
-{
-  "cpai_base_url": "http://127.0.0.1:32168",
-  "cpai_model": "license-plate"
-}
-```
-
-The scanner calls the local custom endpoint using the configured model name. General object detection is separately configurable and normally uses:
-
-```text
-/v1/vision/detection
-```
+| `teslacam_root` | Main directory containing the TeslaCam folder. |
+| `folders` | TeslaCam folders to scan. |
+| `scan_sleep_s` | Seconds between scanner passes. |
+| `frame_interval_s` | Sampling interval used inside each video. |
+| `cpai_base_url` | CodeProject.AI Server URL. |
+| `cpai_model` | Custom plate-detector endpoint/model name. |
+| `cpai_min_det_conf` | Minimum detector confidence to store. |
+| `ocr_enabled` | Enables local Tesseract OCR. |
+| `ocr_cpai_enabled` | Enables CodeProject.AI OCR. |
+| `object_detection_enabled` | Enables optional generic object detection. |
+| `generated_retention_days` | Days to keep locally generated images before cleanup. |
 
 ---
 
 ## Service Management
 
-### Check status
+Check service status:
 
 ```bash
 sudo systemctl status teslacam-plate-web.service --no-pager -l
 sudo systemctl status teslacam-plate-scanner.service --no-pager -l
 ```
 
-### Follow live logs
+Follow dashboard logs:
 
 ```bash
 sudo journalctl -u teslacam-plate-web.service -f
+```
+
+Follow scanner logs:
+
+```bash
 sudo journalctl -u teslacam-plate-scanner.service -f
 ```
 
-### Restart after a configuration change
-
-```bash
-sudo systemctl restart teslacam-plate-web.service
-sudo systemctl restart teslacam-plate-scanner.service
-```
-
-### Start or stop the paired services
+Start or stop the full project:
 
 ```bash
 sudo systemctl start teslacam-plate.target
 sudo systemctl stop teslacam-plate.target
 ```
 
-### Disable automatic startup
+Disable automatic startup:
 
 ```bash
 sudo systemctl disable --now teslacam-plate.target
@@ -405,29 +334,26 @@ sudo systemctl disable --now teslacam-plate.target
 
 ## Development Run
 
-For a local development setup without installing `systemd` services:
+Run the project without installing `systemd` services:
 
 ```bash
 cp config.example.json config.json
+
 python3 -m venv venv
 . venv/bin/activate
+
 pip install -r requirements.txt
-```
-
-Start the web app in one terminal:
-
-```bash
 python -m app.webapp --config config.json
 ```
 
-Start the scanner in another terminal:
+In a second terminal:
 
 ```bash
 . venv/bin/activate
 python -m scanner.run_scanner --config config.json
 ```
 
-Open:
+Then browse to:
 
 ```text
 http://127.0.0.1:5057
@@ -439,65 +365,74 @@ http://127.0.0.1:5057
 
 ```text
 tesla-license-plate-scanner/
-â”œâ”€â”€ app/                    # Flask app, database, local storage, video helpers, web routes
-â”œâ”€â”€ scanner/                # Frame sampling, CodeProject.AI client, OCR, deduplication, scan loop
-â”œâ”€â”€ templates/              # Dashboard HTML templates
-â”œâ”€â”€ static/                 # CSS, JavaScript, and local generated detection media
-â”œâ”€â”€ systemd/                # Web service, scanner service, paired target
-â”œâ”€â”€ tools/                  # Maintenance utilities, including OCR backfill
-â”œâ”€â”€ docs/                   # Architecture, deployment, and privacy notes
-â”œâ”€â”€ config.example.json     # Safe example configuration
-â”œâ”€â”€ install.sh              # Linux installation helper
-â””â”€â”€ requirements.txt        # Python dependencies
+├── app/                    # Flask app, database, routes, storage, video helpers
+├── scanner/                # Frame sampling, AI requests, OCR, deduplication, scan loop
+├── templates/              # Dashboard pages
+├── static/                 # CSS, JavaScript, and generated local media
+├── systemd/                # Web, scanner, and target service definitions
+├── tools/                  # Maintenance utilities, including OCR backfill
+├── docs/                   # Deployment, CodeProject.AI, privacy, and architecture docs
+├── extras/codeproject-ai/  # Example Docker Compose files for CodeProject.AI
+├── config.example.json     # Safe example configuration
+├── install.sh              # Linux installer
+└── requirements.txt        # Python dependencies
 ```
 
 ---
 
-## Privacy, Safety, and Responsible Use
+## Privacy, Security, and Responsible Use
 
-The project is intentionally local-first. The cleaned public repository does **not** contain:
+This project is intentionally local-first.
+
+The public repository does **not** include:
 
 - TeslaCam footage.
-- Captured plate images.
+- Captured license-plate images.
 - Live SQLite databases.
-- Personal machine configuration.
+- Private configuration files.
 - Vehicle-owner lookup tools.
-- Government or commercial license-plate databases.
+- Government or commercial plate databases.
 - Cloud upload functionality.
-- Built-in public internet exposure controls.
+- Built-in user authentication.
+- Public-internet exposure controls.
 
-Use it only with footage you own or have explicit authorization to review. Keep the dashboard on a trusted private network. Use a VPN or properly authenticated reverse proxy before making it remotely accessible.
+Keep the dashboard on a trusted local network. Use a VPN or authenticated reverse proxy before allowing remote access.
 
-Follow applicable laws, property rules, workplace rules, platform terms, and privacy expectations. OCR output should be treated as a review aid, not proof of a plate number or vehicle identity.
+Use this project only with footage you own or are explicitly authorized to review. Detection and OCR results can be wrong; verify important results against the original source video.
 
 ---
 
-## Known Limitations
+## Limitations
 
-- Detection quality depends on lighting, distance, speed, camera angle, glare, weather, compression, and occlusion.
-- OCR can misread plates, especially from low-quality or angled source footage.
-- Tesla camera availability and video layout can differ between models, software versions, and event types.
-- The project reviews recorded video; it is not designed as a real-time tracking system.
-- A compatible CodeProject.AI setup and detector model are required but are not included.
-- The dashboard is not a substitute for evidence preservation. Keep original clips unchanged and make copies before experimenting.
+- Detection quality depends on lighting, distance, blur, weather, glare, camera angle, speed, and video compression.
+- OCR can misread plates and is not guaranteed accurate.
+- This is a footage-review tool, not a real-time tracking system.
+- This does not identify people or vehicle owners.
+- Tesla camera availability and video formats can vary by vehicle and software version.
+- CodeProject.AI, Docker, and custom detector models are separate dependencies.
 
 ---
 
 ## Documentation
 
+- [CodeProject.AI Setup Guide](docs/CODEPROJECT_AI.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [Privacy Notes](docs/PRIVACY.md)
 - [Security Guidance](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
 ---
 
-## Not Affiliated With Tesla
+## Not Affiliated With Tesla or TeslaUSB
 
-Tesla, Dashcam, and Sentry Mode are names associated with Tesla, Inc. This is an independent home-lab project and is not affiliated with, endorsed by, sponsored by, or supported by Tesla, Inc.
+Tesla, Dashcam, and Sentry Mode are trademarks or product names of Tesla, Inc. TeslaUSB is a separate community project.
+
+This is an independent home-lab project. It is not affiliated with, endorsed by, sponsored by, or supported by Tesla, Inc. or TeslaUSB.
+
+---
 
 ## License
 
 Released under the [MIT License](LICENSE).
-

@@ -1,14 +1,7 @@
-TeslaCam Plate & Object Detection Dashboard
-Repository package: 2026-06-26
+Tesla License Plate Scanner
+Version: v1.0.0
+Release date: 2026-06-26
 
-Origin
-------
-Cleaned and documented from a working V1-rev5a / round3-hotfix backup.
-
-Repository packaging changes
-----------------------------
-- Excluded live SQLite state, generated captures, and local configuration.
-- Removed stale patch backups and a known broken scanner copy.
-- Corrected a regex word-boundary typo in the state-abbreviation OCR helper.
-- Added GitHub documentation, CI compilation check, privacy guidance, and a
-  one-command PowerShell publisher.
+Initial public release.
+Includes the TeslaCam analysis dashboard, scanner worker, systemd deployment files,
+TeslaUSB workflow documentation, CodeProject.AI setup guide, and source release packaging.
